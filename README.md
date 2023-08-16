@@ -27,4 +27,4 @@ Caso queira testar a versão executável da aplicação execute o comando no ter
 pyinstaller --onefile "C:\Automacao_DECOM&DEMKT_BNDES\Automacao baseDados\Automacao baseDados.py"
 ```
 ![1](https://github.com/philippdouglas/Aplicativo_Python_Automacao_de_Processos_BNDES/assets/78768376/2157fcd5-4bb8-485d-be22-99b564daf57a)
-![2](https://github.com/philippdouglas/Aplicativo_Python_Automacao_de_Processos_BNDES/assets/78768376/324daea5-f158-4ee4-a21b-e75083bccb32)
+
