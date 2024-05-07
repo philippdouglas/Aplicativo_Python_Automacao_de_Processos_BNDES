@@ -1,5 +1,3 @@
-#==========Bibliotecas
-
 import json
 import locale
 import tkinter as tk
@@ -39,7 +37,6 @@ from pathlib import Path
 import glob 
 import re
 import sys
-
 
 
 #==========Variáveis globais
@@ -876,7 +873,7 @@ def tab2():
             df_dataFiltros = df_dataFiltros.drop(['Título'], axis=1)
             df_dataFiltros = df_dataFiltros.drop(['Hora'], axis=1)
             
-            ########## Criaçao de colunas de classificação para merge com arquivo base Bases/02_Tratadas/Blog.xlsx ##########
+            ########## Criação de colunas de classificação para merge com arquivo base Bases/02_Tratadas/Blog.xlsx ##########
             colunas = ['Tipo Blog']
             df_tipo = pd.DataFrame(columns=colunas)
             df_tipo['Tipo Blog'] = df_tipo['Tipo Blog'].astype(object)
@@ -1648,7 +1645,7 @@ def tab3():
         # Diretórios de origem e destino
         backup_dir = 'C:/Automacao_DECOM&DEMKT_BNDES/Bases/05_BackUp/@Backup Releases/'
         dest_dirs = [
-            'C:/Automacao_DECOM&DEMKT_BNDES/Bases/02_Tratadas',
+            'C:/Automacao_DECOM&DEMKT_BNDES/Bases/02_Tratadas/',
             'C:/Automacao_DECOM&DEMKT_BNDES/Bases/03_Sistema/',
             'C:/Automacao_DECOM&DEMKT_BNDES/Bases/04_Público/'
         ]
@@ -1958,197 +1955,210 @@ def tab5():
 #============================================================================================================================================================================================================================
 
     def scrape_Facebook():
+        
+        options = webdriver.ChromeOptions()
+        #options.add_argument("--headless")
+        options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
+        options.add_argument("--log-level=3")
+        driver = webdriver.Chrome(options=options)
+        
+        def login():
+            
+            driver.get("https://www.facebook.com/")
+            email_field = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="email"]')))
+            email_field.send_keys("e-mail")
+            time.sleep(2)
+            password_field = WebDriverWait(driver, 10).until(EC.visibility_of_element_located((By.XPATH, '//*[@id="pass"]')))
+            password_field.send_keys("senha")
+            time.sleep(2)
+            pyautogui.press('tab', presses=2)
+            pyautogui.press('enter')
+            time.sleep(5)
+        
+        login()
+        
+        def scrape():
 
-        lista_urls_Facebook = ['https://www.facebook.com/bancodobrasil'
-                               ,'https://www.facebook.com/bancodonordeste'
-                               ,'https://www.facebook.com/bndes.imprensa'
-                               ,'https://www.facebook.com/bradesco'
-                               ,'https://www.facebook.com/BTGPactual'
-                               ,'https://www.facebook.com/caixa'
-                               ,'https://www.facebook.com/CitiBrasil'
-                               ,'https://www.facebook.com/jpmorganchase'
-                               ,'https://www.facebook.com/morganstanley'
-                               ,'https://www.facebook.com/nubank'
-                               ,'https://www.facebook.com/santanderbrasil']
+            lista_urls_Facebook = ['https://www.facebook.com/bancodobrasil'
+                                ,'https://www.facebook.com/bancodonordeste'
+                                ,'https://www.facebook.com/bndes.imprensa'
+                                ,'https://www.facebook.com/bradesco'
+                                ,'https://www.facebook.com/BTGPactual'
+                                ,'https://www.facebook.com/caixa'
+                                ,'https://www.facebook.com/CitiBrasil'
+                                ,'https://www.facebook.com/jpmorganchase'
+                                ,'https://www.facebook.com/morganstanley'
+                                ,'https://www.facebook.com/nubank'
+                                ,'https://www.facebook.com/santanderbrasil']
 
-     
-        Facebook = 'Facebook'
+        
+            Facebook = 'Facebook'
 
-        df1 = pd.DataFrame(columns=['Grupo', 'Instituicao', 'Plataforma', 'data', 'Seguidores', 'Ano', 'Mês', 'Link'])
-        df1.to_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx', index=False)
-
-        print_to_text(f"{current_time} ->Iniciando busca Seguidores Facebook...")
-
-        for url in lista_urls_Facebook:
-            options = webdriver.ChromeOptions()
-            options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
-            options.add_argument("--headless")
-            options.add_argument("--log-level=3")
-            driver = webdriver.Chrome(options=options)
-            driver.get(url)
-
-                        
-            while True:
-                try:
-                    soup = BeautifulSoup(driver.page_source, 'html.parser')
-                    a_tags = soup.find_all('a', {'class': 'x1i10hfl xjbqb8w x6umtig x1b1mbwd xaqea5y xav7gou x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz xt0b8zv xi81zsa x1s688f'})
-                    
-                    if len(a_tags) < 2:
-                        raise ValueError('second <a> element not found')
-                    
-                    seguidoresFacebook = a_tags[1]
-                    
-                    print_to_text2(f'Link: {url}')
-                    print_to_text2(f'Seguidores: {seguidoresFacebook.text}\n')
-                    break
-                except (TypeError, KeyError, ValueError):
-                    continue
-
-            import datetime
-            agora = datetime.datetime.now()
-            data_atual = agora.strftime("%d/%m/%Y")
-            ano = agora.strftime("%Y")
-            mes = agora.strftime("%m")
-
-            df1 = pd.read_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx')
-            df1_new = pd.DataFrame({'Grupo': url
-                                            .replace('https://www.facebook.com/', '')
-                                            .replace('bancodobrasil', 'Bancos Comerciais')
-                                            .replace('bancodonordeste', 'Bancos Desenvolvimento')
-                                            .replace('bndes.imprensa', 'Bancos Desenvolvimento')
-                                            .replace('bradesco', 'Bancos Comerciais')
-                                            .replace('BTGPactual', 'Banco Boutique')
-                                            .replace('caixa', 'Bancos Comerciais')
-                                            .replace('CitiBrasil', 'Banco Boutique')
-                                            .replace('jpmorganchase', 'Banco Boutique')
-                                            .replace('morganstanley', 'Banco Boutique')
-                                            .replace('nubank', 'Bancos Comerciais')
-                                            .replace('santanderbrasil', 'Bancos Comerciais')
-                                            , 'Instituicao': url
-                                            .replace('https://www.facebook.com/', '')
-                                            .replace('bancodobrasil', 'BB')
-                                            .replace('bancodonordeste', 'BNB')
-                                            .replace('bndes.imprensa', 'Bancos Desenvolvimento')
-                                            .replace('bradesco', 'BRADESCO')
-                                            .replace('BTGPactual', 'BTG')
-                                            .replace('caixa', 'Caixa')
-                                            .replace('CitiBrasil', 'City Bank')
-                                            .replace('jpmorganchase', 'JPMorgan')
-                                            .replace('morganstanley', 'Morgan Stanley')
-                                            .replace('nubank', 'NUBANK')
-                                            .replace('santanderbrasil', 'Santander')
-                                            , 'Plataforma': Facebook
-                                            , 'data': data_atual
-                                            , 'Seguidores': seguidoresFacebook
-                                            , 'Ano': ano
-                                            , 'Mês': mes
-                                            , 'Link': url}, index=[0])
-            df1 = pd.concat([df1, df1_new])
-            # Filtragens
-            df1['Seguidores'] = df1['Seguidores'].apply(lambda x: x.replace(' pessoas', ''))
-            df1['Seguidores'] = df1['Seguidores'].apply(lambda x: x.replace('mil seguidores', 'k'))
-            df1['Seguidores'] = df1['Seguidores'].apply(lambda x: x.replace('mi seguidores', 'M'))
-            df1['Seguidores'] = df1['Seguidores'].apply(lambda x: x.replace(',', '.'))      
+            df1 = pd.DataFrame(columns=['Grupo', 'Instituicao', 'Plataforma', 'data', 'Seguidores', 'Ano', 'Mês', 'Link'])
             df1.to_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx', index=False)
 
-        lista_urls_Facebook2 = ['https://www.facebook.com/AFDOfficiel'
-                               ,'https://www.facebook.com/bancocentraldobrasil/'
-                               ,'https://www.facebook.com/imf'
-                               ,'https://www.facebook.com/itau'
-                               ,'https://www.facebook.com/minfazenda'
-                               ,'https://www.facebook.com/petrobras'
-                               ,'https://www.facebook.com/sebrae'
-                               ,'https://www.facebook.com/worldbank']
-        Facebook = 'Facebook'
+            print_to_text(f"{current_time} ->Iniciando busca Seguidores Facebook...")
+        
 
-        df2 = pd.DataFrame(columns=['Grupo', 'Instituicao', 'Plataforma', 'data', 'Seguidores', 'Ano', 'Mês', 'Link'])
-        df2.to_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx', index=False)
+            for url in lista_urls_Facebook:
+                driver.get(url)
+          
+                while True:
+                    try:
+                        soup = BeautifulSoup(driver.page_source, 'html.parser')
+                        a_tags = soup.find_all('a', {'class': 'x1i10hfl xjbqb8w x1ejq31n xd10rxx x1sy0etr x17r0tee x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 xggy1nq x1a2a7pz xt0b8zv x1hl2dhg xi81zsa x1s688f'})
+                        
+                        if len(a_tags) < 2:
+                            raise ValueError('second <a> element not found')
+                        
+                        seguidoresFacebook = a_tags[1]
+                        
+                        print_to_text2(f'Link: {url}')
+                        print_to_text2(f'Seguidores: {seguidoresFacebook.text}\n')
+                        break
+                    except (TypeError, KeyError, ValueError):
+                        continue
 
-        for url in lista_urls_Facebook2:
-            options = webdriver.ChromeOptions()
-            options.add_argument("user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36")
-            options.add_argument("--headless")
-            options.add_argument("--log-level=3")
-            driver = webdriver.Chrome(options=options)
-            driver.get(url)
+                import datetime
+                agora = datetime.datetime.now()
+                data_atual = agora.strftime("%d/%m/%Y")
+                ano = agora.strftime("%Y")
+                mes = agora.strftime("%m")
 
-            while True:
-                try:
-                    soup = BeautifulSoup(driver.page_source, 'html.parser')
-                    seguidoresFacebook2 = soup.find('a', {'class': 'x1i10hfl xjbqb8w x6umtig x1b1mbwd xaqea5y xav7gou x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 x1hl2dhg xggy1nq x1a2a7pz xt0b8zv xi81zsa x1s688f'})
-                    if seguidoresFacebook2 is None:
-                        raise ValueError('element not found')
-                    print_to_text2(f'Link: {url}')
-                    print_to_text2(f'Seguidores: {seguidoresFacebook2}\n')
-                    break
-                except (TypeError, KeyError, ValueError):
-                    continue               
+                df1 = pd.read_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx')
+                df1_new = pd.DataFrame({'Grupo': url
+                                                .replace('https://www.facebook.com/', '')
+                                                .replace('bancodobrasil', 'Bancos Comerciais')
+                                                .replace('bancodonordeste', 'Bancos Desenvolvimento')
+                                                .replace('bndes.imprensa', 'Bancos Desenvolvimento')
+                                                .replace('bradesco', 'Bancos Comerciais')
+                                                .replace('BTGPactual', 'Banco Boutique')
+                                                .replace('caixa', 'Bancos Comerciais')
+                                                .replace('CitiBrasil', 'Banco Boutique')
+                                                .replace('jpmorganchase', 'Banco Boutique')
+                                                .replace('morganstanley', 'Banco Boutique')
+                                                .replace('nubank', 'Bancos Comerciais')
+                                                .replace('santanderbrasil', 'Bancos Comerciais')
+                                                , 'Instituicao': url
+                                                .replace('https://www.facebook.com/', '')
+                                                .replace('bancodobrasil', 'BB')
+                                                .replace('bancodonordeste', 'BNB')
+                                                .replace('bndes.imprensa', 'Bancos Desenvolvimento')
+                                                .replace('bradesco', 'BRADESCO')
+                                                .replace('BTGPactual', 'BTG')
+                                                .replace('caixa', 'Caixa')
+                                                .replace('CitiBrasil', 'City Bank')
+                                                .replace('jpmorganchase', 'JPMorgan')
+                                                .replace('morganstanley', 'Morgan Stanley')
+                                                .replace('nubank', 'NUBANK')
+                                                .replace('santanderbrasil', 'Santander')
+                                                , 'Plataforma': Facebook
+                                                , 'data': data_atual
+                                                , 'Seguidores': seguidoresFacebook
+                                                , 'Ano': ano
+                                                , 'Mês': mes
+                                                , 'Link': url}, index=[0])
+                df1 = pd.concat([df1, df1_new])
+                # Filtragens
+                df1['Seguidores'] = df1['Seguidores'].apply(lambda x: x.replace('Seguidores:', ''))
+                df1['Seguidores'] = df1['Seguidores'].apply(lambda x: x.replace('mil', '000')) 
+                df1['Seguidores'] = df1['Seguidores'].apply(lambda x: x.replace(' ', ''))     
+                df1.to_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx', index=False)
 
-            import datetime
-            agora = datetime.datetime.now()
-            data_atual = agora.strftime("%d/%m/%Y")
-            ano = agora.strftime("%Y")
-            mes = agora.strftime("%m")
+           
+            lista_urls_Facebook2 = ['https://www.facebook.com/AFDOfficiel'
+                                ,'https://www.facebook.com/bancocentraldobrasil/'
+                                ,'https://www.facebook.com/imf'
+                                ,'https://www.facebook.com/itau'
+                                ,'https://www.facebook.com/minfazenda'
+                                ,'https://www.facebook.com/petrobras'
+                                ,'https://www.facebook.com/sebrae'
+                                ,'https://www.facebook.com/worldbank']
+            Facebook = 'Facebook'
 
-            df2 = pd.read_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx')
-            df2_new = pd.DataFrame({'Grupo': url
-                                            .replace('https://www.facebook.com/', '')
-                                            .replace('AFDOfficiel', 'Bancos Desenvolvimento')
-                                            .replace('bancocentraldobrasil/', 'Outros')                                        
-                                            .replace('imf', 'Bancos Desenvolvimento')
-                                            .replace('itau', 'Bancos Comerciais')                                           
-                                            .replace('minfazenda', 'Outros')
-                                            .replace('petrobras', 'Outros')
-                                            .replace('sebrae', 'Outros')
-                                            .replace('worldbank', 'Bancos Desenvolvimento')
-                                            , 'Instituicao': url
-                                            .replace('https://www.facebook.com/', '')
-                                            .replace('AFDOfficiel', 'ADF')                                          
-                                            .replace('bancocentraldobrasil/', 'BACEN')
-                                            .replace('imf', 'IMF')                              
-                                            .replace('itau', 'ITAU')
-                                            .replace('minfazenda', 'Ministério Fazenda')                                           
-                                            .replace('petrobras', 'Petrobras')
-                                            .replace('sebrae', 'SEBRAE')
-                                            .replace('worldbank', 'WorldBank')
-                                            , 'Plataforma': Facebook
-                                            , 'data': data_atual
-                                            , 'Seguidores': seguidoresFacebook2
-                                            , 'Ano': ano
-                                            , 'Mês': mes
-                                            , 'Link': url}, index=[0])
-            df2 = pd.concat([df2, df2_new])
-            df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace(" ", "")) 
-            df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace('milcurtidas', 'k'))
-            df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace('milseguidores', 'k'))
-            df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace('micurtidas', 'M'))
-            df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace('miseguidores', 'M'))
-            df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace(",", "."))                            
+            df2 = pd.DataFrame(columns=['Grupo', 'Instituicao', 'Plataforma', 'data', 'Seguidores', 'Ano', 'Mês', 'Link'])
             df2.to_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx', index=False)
 
-        #==========Merge lista 1 e 2
-        df1 = pd.read_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx')
-        df2 = pd.read_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx')
-        df_facebook = pd.concat([df1, df2], ignore_index=True)
-        df_facebook = df_facebook.sort_values(by=['Instituicao'])
-        df_facebook.to_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook.xlsx', index=False)
-        os.remove('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx')
-        os.remove('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx')
-        origem = Path('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp')
-        destino = Path('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/baseDados/Facebook')
+            for url in lista_urls_Facebook2:
+                driver.get(url)
 
-        for arquivo in origem.iterdir():
-            shutil.copy(arquivo, destino)
-            data_e_hora_atuais = datetime.datetime.now()
-            data_e_hora_formatada = data_e_hora_atuais.strftime('%d_%m_%Y_%H_%M')
-            arquivo_origem = 'C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/baseDados/Facebook/Seguidores_Facebook.xlsx'
-            arquivo_destino = 'C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/baseDados/Facebook/Seguidores_Facebook_' + data_e_hora_formatada + '.xlsx'
-            os.rename(arquivo_origem, arquivo_destino)
-            local = 'C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/'
+                while True:
+                    try:
+                        soup = BeautifulSoup(driver.page_source, 'html.parser')
+                        seguidoresFacebook2 = soup.find('a', {'class': 'x1i10hfl xjbqb8w x1ejq31n xd10rxx x1sy0etr x17r0tee x972fbf xcfux6l x1qhh985 xm0m39n x9f619 x1ypdohk xt0psk2 xe8uvvx xdj266r x11i5rnm xat24cr x1mh8g0r xexx8yu x4uap5 x18d9i69 xkhd6sd x16tdsg8 xggy1nq x1a2a7pz xt0b8zv x1hl2dhg xi81zsa x1s688f'})
+                        if seguidoresFacebook2 is None:
+                            raise ValueError('element not found')
+                        print_to_text2(f'Link: {url}')
+                        print_to_text2(f'Seguidores: {seguidoresFacebook2}\n')
+                        break
+                    except (TypeError, KeyError, ValueError):
+                        continue               
+
+                import datetime
+                agora = datetime.datetime.now()
+                data_atual = agora.strftime("%d/%m/%Y")
+                ano = agora.strftime("%Y")
+                mes = agora.strftime("%m")
+
+                df2 = pd.read_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx')
+                df2_new = pd.DataFrame({'Grupo': url
+                                                .replace('https://www.facebook.com/', '')
+                                                .replace('AFDOfficiel', 'Bancos Desenvolvimento')
+                                                .replace('bancocentraldobrasil/', 'Outros')                                        
+                                                .replace('imf', 'Bancos Desenvolvimento')
+                                                .replace('itau', 'Bancos Comerciais')                                           
+                                                .replace('minfazenda', 'Outros')
+                                                .replace('petrobras', 'Outros')
+                                                .replace('sebrae', 'Outros')
+                                                .replace('worldbank', 'Bancos Desenvolvimento')
+                                                , 'Instituicao': url
+                                                .replace('https://www.facebook.com/', '')
+                                                .replace('AFDOfficiel', 'ADF')                                          
+                                                .replace('bancocentraldobrasil/', 'BACEN')
+                                                .replace('imf', 'IMF')                              
+                                                .replace('itau', 'ITAU')
+                                                .replace('minfazenda', 'Ministério Fazenda')                                           
+                                                .replace('petrobras', 'Petrobras')
+                                                .replace('sebrae', 'SEBRAE')
+                                                .replace('worldbank', 'WorldBank')
+                                                , 'Plataforma': Facebook
+                                                , 'data': data_atual
+                                                , 'Seguidores': seguidoresFacebook2
+                                                , 'Ano': ano
+                                                , 'Mês': mes
+                                                , 'Link': url}, index=[0])
+                df2 = pd.concat([df2, df2_new])
+                df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace('curtidas', ''))
+                df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace('Seguidores:', ''))
+                df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace('mil', '000'))                           
+                df2.to_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx', index=False)
+                df2['Seguidores'] = df2['Seguidores'].apply(lambda x: x.replace(' ', ''))
+        
+            #==========Merge lista 1 e 2
+            df1 = pd.read_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx')
+            df2 = pd.read_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx')
+            df_facebook = pd.concat([df1, df2], ignore_index=True)
+            df_facebook = df_facebook.sort_values(by=['Instituicao'])
+            df_facebook.to_excel('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook.xlsx', index=False)
+            os.remove('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook1.xlsx')
+            os.remove('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/Seguidores_Facebook2.xlsx')
+            origem = Path('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp')
+            destino = Path('C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/baseDados/Facebook')
+
+            for arquivo in origem.iterdir():
+                shutil.copy(arquivo, destino)
+                data_e_hora_atuais = datetime.datetime.now()
+                data_e_hora_formatada = data_e_hora_atuais.strftime('%d_%m_%Y_%H_%M')
+                arquivo_origem = 'C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/baseDados/Facebook/Seguidores_Facebook.xlsx'
+                arquivo_destino = 'C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/baseDados/Facebook/Seguidores_Facebook_' + data_e_hora_formatada + '.xlsx'
+                os.rename(arquivo_origem, arquivo_destino)
+                local = 'C:/Automacao_DECOM&DEMKT_BNDES/Automacao baseDados/temp/'
+                
+                for arquivo in os.listdir(local):
+                    os.remove(os.path.join(local, arquivo))    
+            print_to_text(f"{current_time} \u2714Busca seguidores Facebook concluída...")
             
-            for arquivo in os.listdir(local):
-                os.remove(os.path.join(local, arquivo))    
-        print_to_text(f"{current_time} \u2714Busca seguidores Facebook concluída...")
+        scrape()
 
 #============================================================================================================================================================================================================================
     
@@ -3355,7 +3365,7 @@ def tab5():
     button_criarFeed.bind("<Leave>", hide_status_tooltip)
 #============================================================================================================================================================================================================================
     
-    #==========Botão Abrir Seguidoes(feed)
+    #==========Botão Abrir Seguidores(feed)
     
     button_criarFeed = tk.Button(button_frame2, text="Abrir Seguidores(feed)", command=abrirArquivo, width=17)
     button_criarFeed.grid(row=1, column=1, padx=2, pady=5)
@@ -3705,7 +3715,7 @@ def tab6():
     # Função para exibir a legenda do botão
     def show_backupPaineis_tooltip(event):
         global tooltip_backupPaineis
-        tooltip_backupPaineis = tk.Label(tab6_frame, text="Realiza o backup de todo conteudo da pasta T:\DECOM_DEMKT\Dados\Paineis de dados, para a pasta 05_BackUp ", background="white", relief="solid", borderwidth=1)
+        tooltip_backupPaineis = tk.Label(tab6_frame, text="Realiza o backup de todo conteudo da pasta c:\\DECOM_DEMKT\\Dados\\Paineis de dados, para a pasta 05_BackUp ", background="white", relief="solid", borderwidth=1)
         tooltip_backupPaineis.grid(row=0, column=0, padx=20, sticky="w")
 
     # Vincular a exibição da legenda ao evento de passar o mouse sobre o botão
@@ -3907,3 +3917,5 @@ tab6()
 tab_control.pack(expand=1, fill='both')
 
 root.mainloop()
+
+
